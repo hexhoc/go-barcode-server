@@ -1,0 +1,38 @@
+{{ template "header"}}
+
+<body>
+    <main>
+        {{ template "mainmenu"}}
+        <div class="logs">
+            <h2>Server Logs</h2>
+
+            <div class="card">
+                <div class="logs-controls">
+                    <button onclick="location.reload()">Refresh</button>
+                </div>
+
+                <div class="logs-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Level</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Logs}}
+                            <tr class="log-entry level-{{.LevelString}}">
+                                <td class="timestamp">{{.Timestamp.Format "2006-01-02 15:04:05"}}</td>
+                                <td class="level {{.LevelString}}">{{.LevelString}}</td>
+                                <td class="message">{{.Message}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>

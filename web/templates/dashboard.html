@@ -1,0 +1,80 @@
+{{ template "header"}}
+<body>
+    <main>
+        {{ template "mainmenu"}}
+
+        <div class="dashboard">
+            <h2>Dashboard</h2>
+
+            <div class="status-cards">
+                <div class="card">
+                    <h3>COM Port Status</h3>
+                    {{if .COMPort}}
+                    <p class="status connected">Connected to {{.COMPort.GetPortName}}</p>
+                    <p>Baud Rate: {{.COMPort.GetBaudRate}}</p>
+                    {{else}}
+                    <p class="status disconnected">Not Connected</p>
+                    {{end}}
+                </div>
+
+                <div class="card">
+                    <h3>TCP Clients</h3>
+                    <p class="clients-count">{{.ClientCount}} connected</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>COM Port Configuration</h3>
+                <form action="/reconnect-com" method="post">
+                    <div class="form-group">
+                        <label for="port">COM Port:</label>
+                        <input type="text" id="port" name="port"
+                            value="{{if .COMPort}}{{.COMPort.GetPortName}}{{else}}COM1{{end}}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="baudrate">Baud Rate:</label>
+                        <select id="baudrate" name="baudrate">
+                            <option value="9600" {{if and .COMPort (eq .COMPort.GetBaudRate 9600)}}selected{{end}}>9600
+                            </option>
+                            <option value="19200" {{if and .COMPort (eq .COMPort.GetBaudRate 19200)}}selected{{end}}>
+                                19200</option>
+                            <option value="38400" {{if and .COMPort (eq .COMPort.GetBaudRate 38400)}}selected{{end}}>
+                                38400</option>
+                            <option value="57600" {{if and .COMPort (eq .COMPort.GetBaudRate 57600)}}selected{{end}}>
+                                57600</option>
+                            <option value="115200" {{if and .COMPort (eq .COMPort.GetBaudRate 115200)}}selected{{end}}>
+                                115200</option>
+                        </select>
+                    </div>
+                    <button type="submit">Reconnect</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Connected Clients</h3>
+                {{if .Clients}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Clients}}
+                        <tr>
+                            <td>{{.id}}</td>
+                            <td>{{.addr}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{else}}
+                <p>No clients connected</p>
+                {{end}}
+            </div>
+
+        </div>
+    </main>
+
+</body>
