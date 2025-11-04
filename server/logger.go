@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 )
@@ -80,9 +81,15 @@ func (l *Logger) GetAllEntries() []LogEntry {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 
-	// Return a copy of all entries
+	// Create a copy of all entries
 	entries := make([]LogEntry, len(l.entries))
 	copy(entries, l.entries)
+
+	// Sort by timestamp descending (newest first)
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Timestamp.After(entries[j].Timestamp)
+	})
+
 	return entries
 }
 

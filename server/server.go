@@ -13,14 +13,15 @@ type Client struct {
 }
 
 type Server struct {
-	tcpListener   net.Listener
-	clients       map[int]*Client
-	clientsMutex  sync.RWMutex
-	clientCounter int
-	comPort       *COMPort
-	logger        *Logger
-	running       bool
-	runningMutex  sync.RWMutex
+	tcpListener       net.Listener
+	clients           map[int]*Client
+	clientsMutex      sync.RWMutex
+	clientCounter     int
+	comPort           *COMPort
+	availableComPorts []string
+	logger            *Logger
+	running           bool
+	runningMutex      sync.RWMutex
 }
 
 func NewServer() *Server {
@@ -47,6 +48,7 @@ func (s *Server) StartTCPServer(addr string) error {
 			break
 		}
 
+		// TODO: Check what is deadline?
 		s.tcpListener.(*net.TCPListener).SetDeadline(time.Now().Add(1 * time.Second))
 		conn, err := s.tcpListener.Accept()
 		if err != nil {
@@ -91,6 +93,7 @@ func (s *Server) handleClient(client *Client) {
 			return
 		}
 
+		// TODO: Check what is deadline?
 		client.conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 		_, err := reader.ReadString('\n')
 		if err != nil {

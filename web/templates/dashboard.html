@@ -31,8 +31,17 @@
                 <form action="/reconnect-com" method="post">
                     <div class="form-group">
                         <label for="port">COM Port:</label>
-                        <input type="text" id="port" name="port"
-                            value="{{if .COMPort}}{{.COMPort.GetPortName}}{{else}}COM1{{end}}" required>
+                        <select id="port" name="port" required>
+                            {{$currentPort := ""}}
+                            {{if .COMPort}}
+                                {{$currentPort = .COMPort.GetPortName}}
+                            {{end}}
+                            {{range .AvailablePorts}}
+                                <option value="{{.}}" {{if eq . $currentPort}}selected{{end}}>{{.}}</option>
+                            {{else}}
+                                <option value="">No ports available</option>
+                            {{end}}
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="baudrate">Baud Rate:</label>

@@ -89,30 +89,6 @@ func (c *COMPort) ReadData(server *Server) {
 					server.Broadcast(barcode)
 				}
 			}
-
-			// // OLD
-			// if n > 0 {
-			// 	readBuffer = append(readBuffer, buffer[:n]...)
-
-			// 	// Process complete barcode (assuming newline termination)
-			// 	for i, b := range readBuffer {
-			// 		if b == '\n' || b == '\r' {
-			// 			if len(readBuffer[:i]) > 0 {
-			// 				barcode := string(readBuffer[:i])
-			// 				server.logger.Info("Barcode scanned: %s", barcode)
-			// 				server.Broadcast(barcode)
-			// 			}
-			// 			readBuffer = readBuffer[i+1:]
-			// 			break
-			// 		}
-			// 	}
-
-			// 	// Prevent buffer from growing too large
-			// 	if len(readBuffer) > 1024 {
-			// 		readBuffer = readBuffer[:0]
-			// 		server.logger.Warning("COM port read buffer overflow, cleared buffer")
-			// 	}
-			// }
 		}
 	}
 }
@@ -147,7 +123,7 @@ func (s *Server) MonitorCOMPort() {
 		}
 
 		if s.comPort == nil || !s.comPort.IsConnected() {
-			ports := s.getAvailablePorts()
+			ports := s.GetAvailablePorts()
 			for _, port := range ports {
 				s.logger.Info("Attempting to connect to COM port: %s", port)
 				comPort := NewCOMPort(port, 9600) // Standard baud rate for scanners
@@ -176,23 +152,53 @@ func (s *Server) MonitorCOMPort() {
 
 // getAvailablePorts returns a list of available COM ports
 // This is a simplified implementation - you might want to enhance it
-func (s *Server) getAvailablePorts() []string {
-	// Common COM port names for Windows and Linux
-	ports := []string{}
+func (s *Server) GetAvailablePorts() []string {
+	availablePorts := []string{}
+
+	// Common COM port names to check
+	portsToCheck := []string{}
 
 	// Windows COM ports
 	for i := 1; i <= 20; i++ {
-		ports = append(ports, fmt.Sprintf("COM%d", i))
+		portsToCheck = append(portsToCheck, fmt.Sprintf("COM%d", i))
 	}
 
 	// Linux serial ports
 	for i := 0; i <= 10; i++ {
-		ports = append(ports, fmt.Sprintf("/dev/ttyS%d", i))
-		ports = append(ports, fmt.Sprintf("/dev/ttyUSB%d", i))
-		ports = append(ports, fmt.Sprintf("/dev/ttyACM%d", i))
+		portsToCheck = append(portsToCheck, fmt.Sprintf("/dev/ttyS%d", i))
+		portsToCheck = append(portsToCheck, fmt.Sprintf("/dev/ttyUSB%d", i))
+		portsToCheck = append(portsToCheck, fmt.Sprintf("/dev/ttyACM%d", i))
 	}
 
-	return ports
+	// Test each port to see if it's available
+	for _, port := range portsToCheck {
+		if s.isPortAvailable(port) {
+			availablePorts = append(availablePorts, port)
+		}
+	}
+
+	return availablePorts
+}
+
+// isPortAvailable checks if a specific COM port is available by attempting to open it
+func (s *Server) isPortAvailable(portName string) bool {
+	options := serial.OpenOptions{
+		PortName:        portName,
+		BaudRate:        9600, // Use a standard baud rate for testing
+		DataBits:        8,
+		StopBits:        1,
+		ParityMode:      serial.PARITY_NONE,
+		MinimumReadSize: 1,
+	}
+
+	port, err := serial.Open(options)
+	if err != nil {
+		return false
+	}
+
+	// If we successfully opened it, close it immediately since we were just testing
+	port.Close()
+	return true
 }
 
 // ReconnectCOMPort allows reconnecting to a specific COM port

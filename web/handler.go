@@ -14,11 +14,12 @@ type WebHandler struct {
 }
 
 type TemplateData struct {
-	Title       string
-	Clients     []map[string]interface{}
-	Logs        []server.LogEntry
-	COMPort     *server.COMPort
-	ClientCount int
+	Title          string
+	Clients        []map[string]interface{}
+	Logs           []server.LogEntry
+	COMPort        *server.COMPort
+	AvailablePorts []string
+	ClientCount    int
 }
 
 func NewWebHandler(srv *server.Server) *WebHandler {
@@ -75,11 +76,13 @@ func (wh *WebHandler) testHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (wh *WebHandler) dashboardHandler(w http.ResponseWriter, r *http.Request) {
+	// Get all active com ports
 	data := TemplateData{
-		Title:       "Barcode Server Dashboard",
-		Clients:     wh.server.GetClients(),
-		COMPort:     wh.server.GetCOMPort(),
-		ClientCount: wh.server.GetClientCount(),
+		Title:          "Barcode Server Dashboard",
+		Clients:        wh.server.GetClients(),
+		COMPort:        wh.server.GetCOMPort(),
+		AvailablePorts: wh.server.GetAvailablePorts(),
+		ClientCount:    wh.server.GetClientCount(),
 	}
 
 	if err := wh.tmpl.ExecuteTemplate(w, "dashboard.html", data); err != nil {
