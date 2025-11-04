@@ -90,7 +90,7 @@ func (c *COMPort) ReadData(server *Server) {
 				}
 			}
 
-			// 			// OLD
+			// // OLD
 			// if n > 0 {
 			// 	readBuffer = append(readBuffer, buffer[:n]...)
 
